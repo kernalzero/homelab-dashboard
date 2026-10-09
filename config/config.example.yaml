@@ -1,0 +1,55 @@
+# Copy to config/config.yaml. ${VARS} are read from the environment (.env).
+title: Homelab
+poll_seconds: 30      # UniFi / Proxmox refresh (TrueNAS polls at most every 60s)
+check_seconds: 60     # service tile HTTP checks
+check_timeout: 5
+
+unifi:
+  url: https://192.168.1.1          # UDM Pro
+  api_key: ${UNIFI_API_KEY}
+  # Or a local-only View Only admin instead of an API key:
+  # username: dashboard
+  # password: ${UNIFI_PASSWORD}
+  site: default
+  verify_ssl: false
+
+# One entry per cluster; list each standalone node separately.
+proxmox:
+  - url: https://192.168.1.20:8006
+    token_id: dashboard@pve!homelab
+    token_secret: ${PVE_TOKEN_SECRET}
+    verify_ssl: false
+    discover_ips: true               # look up guest IPs to build tile links
+
+truenas:
+  url: https://192.168.1.50
+  api_key: ${TRUENAS_API_KEY}
+  api: websocket                     # 25.04+; use "rest" for 24.x
+  verify_ssl: false
+
+discovery:
+  truenas_apps: true                 # every installed TrueNAS app becomes a tile
+  proxmox_guests: true               # every VM/LXC becomes a tile, linked when recognised
+
+# Anything not discovered automatically. A configured tile with the same name or
+# URL as a discovered one replaces it. `icon` is a dashboard-icons slug
+# (https://github.com/homarr-labs/dashboard-icons) or an image URL.
+services:
+  - group: Infrastructure
+    items:
+      - name: UniFi Network
+        url: https://192.168.1.1
+        icon: unifi
+      - name: Proxmox
+        url: https://192.168.1.20:8006
+      - name: TrueNAS
+        url: https://192.168.1.50
+  # - group: Media
+  #   items:
+  #     - name: Jellyfin
+  #       url: https://jellyfin.home.arpa
+  #       check_url: http://192.168.10.22:8096/health
+  #     - name: Docker host
+  #       url: https://192.168.10.40:9443
+  #       icon: portainer
+  #       check: false               # show the tile but skip the HTTP check

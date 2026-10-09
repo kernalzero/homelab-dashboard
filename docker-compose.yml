@@ -1,0 +1,13 @@
+services:
+  dashboard:
+    build: .
+    container_name: homelab-dashboard
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      DASHBOARD_CONFIG: /config/config.yaml
+      # DASHBOARD_DEMO: "1"   # sample data, no credentials needed
+    volumes:
+      - ./config:/config:ro
