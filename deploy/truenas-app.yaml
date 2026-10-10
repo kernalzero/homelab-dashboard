@@ -1,0 +1,25 @@
+# TrueNAS custom app: Apps > Discover Apps > ⋮ (top right) > Install via YAML.
+# Paste this, adjust the dataset path and secrets, and save.
+#
+# Before installing:
+#   1. Create a dataset for the config, e.g. tank/apps/homelab-dashboard
+#   2. Put config.yaml in it (start from config/config.example.yaml in the repo)
+#   3. If the image is private, add ghcr.io credentials first (see README).
+services:
+  homelab-dashboard:
+    image: ghcr.io/kernalzero/homelab-dashboard:latest
+    pull_policy: always          # pick up new builds on app restart/update
+    restart: unless-stopped
+    user: "568:568"              # TrueNAS "apps" user; must be able to read the config dataset
+    ports:
+      - "30080:8080"             # open http://<truenas-ip>:30080
+    environment:
+      DASHBOARD_CONFIG: /config/config.yaml
+      TZ: America/New_York
+      # Referenced from config.yaml as ${NAME}:
+      UNIFI_API_KEY: "replace-me"
+      PVE_TOKEN_SECRET: "replace-me"
+      TRUENAS_API_KEY: "replace-me"
+      # DASHBOARD_DEMO: "1"      # sample data, ignores config
+    volumes:
+      - /mnt/tank/apps/homelab-dashboard:/config:ro

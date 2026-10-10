@@ -50,6 +50,32 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 DASHBOARD_CONFIG=config/config.yaml .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8080
 ```
 
+## Running as a TrueNAS app
+
+Every push to `main` builds an image at `ghcr.io/kernalzero/homelab-dashboard:latest`
+(amd64 and arm64) through GitHub Actions. TrueNAS pulls it like any other app.
+
+1. **Make the image pullable.** The repo is private, so the image is private too. Do one of these:
+   - **Keep it private:** create a GitHub personal access token (classic) with only the
+     `read:packages` scope. In TrueNAS, go to **Apps → Configuration → Manage Container Image
+     Registries → Add**, set the URI to `ghcr.io`, and enter your GitHub username and the token.
+   - **Make it public:** go to GitHub → your profile → **Packages → homelab-dashboard → Package
+     settings → Change visibility**. The image contains only code, never your config or secrets.
+2. **Create a config dataset**, e.g. `tank/apps/homelab-dashboard`, and copy
+   `config/config.example.yaml` into it as `config.yaml` with your IPs. Make sure the `apps` user
+   (uid 568) can read it.
+3. **Install:** go to **Apps → Discover Apps → ⋮ → Install via YAML** and paste
+   [`deploy/truenas-app.yaml`](deploy/truenas-app.yaml). Fill in the three secrets, the dataset
+   path and `TZ`, then save.
+4. Open `http://<truenas-ip>:30080`.
+
+**Updating:** after a new build finishes on GitHub, open the app in TrueNAS and click **Update**.
+If no update button shows, stop and start the app; `pull_policy: always` makes it pull the latest
+image.
+
+The dashboard can monitor the TrueNAS host it runs on. Use the NAS's LAN IP in the `truenas:`
+section, not `localhost`.
+
 ## Read-only credentials
 
 Give the dashboard credentials that can read and nothing else.
