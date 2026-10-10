@@ -120,6 +120,8 @@ async def api_state():
         "services": [s | {"health": state["checks"].get(s["id"])} for s in state["services"]],
         "updated": state["updated"],
         "now": time.time(),
+        # Lets every screen show the house's time, not the viewing device's.
+        "tz": os.environ.get("TZ") or None,
     }
 
 

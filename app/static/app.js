@@ -68,10 +68,19 @@ function renderPills(state) {
     }).join("");
 }
 
+// Server's TZ (from the app's environment) when the browser recognises it, else the device's.
+function tz(extra = {}) {
+  const timeZone = last?.tz;
+  if (timeZone) {
+    try { new Intl.DateTimeFormat([], { timeZone }); return { ...extra, timeZone }; } catch {}
+  }
+  return extra;
+}
+
 function tickClock() {
   const d = new Date();
-  $("time").textContent = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  $("date").textContent = d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+  $("time").textContent = d.toLocaleTimeString([], tz({ hour: "2-digit", minute: "2-digit" }));
+  $("date").textContent = d.toLocaleDateString([], tz({ weekday: "long", month: "short", day: "numeric" }));
 }
 
 // ---------- widgets ----------
@@ -222,7 +231,8 @@ function render(state) {
   document.title = state.title;
   $("title").textContent = state.title;
   renderPills(state); renderWidgets(state); renderServices(state); renderPanels(state);
-  $("footer").textContent = state.updated ? `Updated ${new Date(state.updated * 1000).toLocaleTimeString()}` : "Waiting for first poll…";
+  tickClock();
+  $("footer").textContent = state.updated ? `Updated ${new Date(state.updated * 1000).toLocaleTimeString([], tz())}` : "Waiting for first poll…";
 }
 
 async function refresh() {

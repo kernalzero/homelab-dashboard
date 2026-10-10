@@ -65,6 +65,13 @@ def test_truenas_parse():
     assert d["replications"][0]["state"] == "SUCCESS"
 
 
+def test_truenas_custom_app_uses_install_name():
+    apps = [{"name": "homelab-dashboard", "custom_app": True, "state": "RUNNING",
+             "metadata": {"title": "Custom App", "icon": "https://example/ix.png"}}]
+    a = truenas.parse({}, [], [], [], apps, [], None)["apps"][0]
+    assert a["title"] == "Homelab Dashboard" and a["icon"] is None
+
+
 def test_truenas_pool_without_dataset_falls_back_to_raw():
     d = truenas.parse({}, [{"name": "p", "size": 100, "allocated": 25, "healthy": True}], [], [], [], [], None)
     assert d["pools"][0]["pct"] == 25.0

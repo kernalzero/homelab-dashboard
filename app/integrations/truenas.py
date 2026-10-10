@@ -68,12 +68,16 @@ def parse(info, pools, datasets, alerts, apps, replications, host):
             # Portals are reported against 0.0.0.0; point them at the NAS.
             url = url.replace("0.0.0.0", host)
         meta = a.get("metadata") or {}
+        # Apps installed via YAML all report the title "Custom App" and a generic icon;
+        # use the name they were installed under instead.
+        custom = a.get("custom_app") or meta.get("title") == "Custom App"
+        name = a.get("name") or ""
         out_apps.append({
-            "name": a.get("name"),
-            "title": meta.get("title") or a.get("name"),
+            "name": name,
+            "title": name.replace("-", " ").replace("_", " ").title() if custom else (meta.get("title") or name),
             "state": (a.get("state") or "").upper(),
             "url": url,
-            "icon": meta.get("icon"),
+            "icon": None if custom else meta.get("icon"),
             "update": bool(a.get("upgrade_available")),
         })
 
